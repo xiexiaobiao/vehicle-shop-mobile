@@ -1,0 +1,196 @@
+{
+	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+	    // tabBar里的list第一项和page中的第一项要相同，否则首页的tabbar不显示
+		{
+			"path": "pages/report/home",
+			"style": {
+				"navigationBarTitleText": "报表首页"
+			}
+		},
+		{
+			"path": "pages/login/login-home",
+			"style": {
+				"navigationBarTitleText": "系统登录"
+			}
+		},
+		{
+			"path": "pages/index/index",
+			"style": {
+				"navigationBarTitleText": "鼎泰汽车手机端"
+			}
+		},
+		{
+			"path": "pages/report/order",
+			"style": {
+				"navigationBarTitleText": "订单报表"
+			}
+		},
+		{
+			"path": "pages/report/sale",
+			"style": {
+				"navigationBarTitleText": "销售额报表"
+			}
+		},
+		{
+			"path": "pages/report/stock",
+			"style": {
+				"navigationBarTitleText": "库存报表"
+			}
+		},
+		{
+			"path": "pages/report/customer",
+			"style": {
+				"navigationBarTitleText": "客户报表"
+			}
+		},
+		{
+			"path": "pages/report/cusQuantity",
+			"style": {
+				"navigationBarTitleText": "客户量报表"
+			}
+		},
+		{
+			"path": "pages/order/order-list",
+			"style": {
+				"navigationBarTitleText": "订单列表"
+			}
+		},
+		{
+			"path": "pages/product/pdtCategory",
+			"style": {
+				"navigationBarTitleText": "商品分类"
+			}
+		},
+		{
+			"path": "pages/product/list",
+			"style": {
+				"navigationBarTitleText": "商品列表"
+			}
+		},
+		{
+			"path": "pages/product/product",
+			"style": {
+				"navigationBarTitleText": "商品详细"
+			}
+		},
+		{
+			"path": "pages/order/cart",
+			"style": {
+				"navigationBarTitleText": "购物车"
+			}
+		},
+		
+		{
+			"path": "pages/order/home",
+			"style": {
+				"navigationBarTitleText": "订单"
+			}
+		},
+		{
+			"path": "pages/stock/home",
+			"style": {
+				"navigationBarTitleText": "库存"
+			}
+		},
+		{
+			"path": "pages/extension/home",
+			"style": {
+				"navigationBarTitleText": "系统功能"
+			}
+		},
+		{
+			"path": "pages/order/createOrder",
+			"style": {
+				"navigationBarTitleText": "创建订单"
+			}
+		},
+		{
+			"path": "pages/customer/customer",
+			"style": {
+				"navigationBarTitleText": "选择客户"
+			}
+		},
+		{
+			"path": "pages/customer/cusManage",
+			"style": {
+				"navigationBarTitleText": "编辑客户"
+			}
+		},
+		{
+			"path": "pages/product/newProduct",
+			"style": {
+				"navigationBarTitleText": "新增商品"
+			}
+		},
+		{
+			"path": "pages/report/test",
+			"style": {
+				"navigationBarTitleText": "测试页面"
+			}
+		},
+		{
+			"path": "pages/order/orderDetail",
+			"style": {
+				"navigationBarTitleText": "订单详细"
+			}
+		},
+		{
+			"path": "pages/order/editOrder",
+			"style": {
+				"navigationBarTitleText": "订单编辑"
+			}
+		}
+	],
+	
+	"globalStyle": {
+		"navigationBarBackgroundColor": "#00aaff",
+		"navigationBarTitleText": "鼎泰汽车手机端",
+		"navigationStyle": "default", //不使用自定义顶部导航
+		"navigationBarTextStyle": "white"
+	},
+	
+	"tabBar": {
+		"height":"50px",
+		"color": "#C0C4CC",
+		"selectedColor": "#fa436a",
+		"borderStyle": "black",
+		"backgroundColor": "#ffffff",
+		"list": [{
+				"pagePath": "pages/report/home",
+				"iconPath": "static/tabbar/report.png",
+				"selectedIconPath": "static/tabbar/report_cur.png",
+				"text": "首页"
+			},
+			{
+				"pagePath": "pages/order/home",
+				"iconPath": "static/tabbar/order.png",
+				"selectedIconPath": "static/tabbar/order_cur.png",
+				"text": "订单"
+			},
+			{
+				"pagePath": "pages/stock/home",
+				"iconPath": "static/tabbar/stock.png",
+				"selectedIconPath": "static/tabbar/stock_cur.png",
+				"text": "库存"
+			},
+			{
+				"pagePath": "pages/extension/home",
+				"iconPath": "static/tabbar/extension.png",
+				"selectedIconPath": "static/tabbar/extension_cur.png",
+				"text": "菜单"
+			}
+			
+		]
+	},
+	
+	"usingComponts": true,
+		"condition": { //模式配置，仅开发期间生效
+		"current": 0, //当前激活的模式(list 的索引项)
+		"list": [{
+				"name": "首页", //模式名称
+				"path": "pages/login/login-home", ////启动页面，必选
+				"query": "hasLogin = true" ////启动参数，在页面的onLoad函数里面得到。
+			}
+		]
+	}
+}
