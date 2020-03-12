@@ -64,7 +64,33 @@
 		{
 			"path": "pages/product/list",
 			"style": {
-				"navigationBarTitleText": "商品列表"
+				"navigationBarTitleText": "商品列表",
+				"app-plus": {
+					"titleNView": {
+						"buttons": [
+							{
+								"text": "添加",
+								"fontSize": "14"
+								// "redDot": true
+							},
+							{
+								"text": "已选",
+								"fontSize": "14",
+								"badgeText": "12"
+							},
+							{
+								"text": "返回",
+								"fontSize": "14"
+							}
+/* 							{
+								"type": "share"
+							},
+							{
+								"type": "favorite"
+							} */
+						]
+					}
+				}
 			}
 		},
 		{
@@ -76,7 +102,17 @@
 		{
 			"path": "pages/order/cart",
 			"style": {
-				"navigationBarTitleText": "购物车"
+				"navigationBarTitleText": "未完成订单",
+				"app-plus": {
+									"titleNView": {
+										"buttons": [
+											{
+												"text": "添加商品",
+												"fontSize": "14"
+											}
+										]
+									}
+								}
 			}
 		},
 		

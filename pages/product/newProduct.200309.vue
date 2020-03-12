@@ -14,24 +14,48 @@
 		</view>
 		<view class="row b-b">
 			<text class="tit">品牌</text>
-			<input class="input" type="text" v-model="productData.brandName" placeholder="" placeholder-class="placeholder" />
+			<input class="input" type="text" v-model="productData.brandName" placeholder="品牌" placeholder-class="placeholder" />
 			<text class="yticon icon-shouhuodizhi"></text>
 		</view>
 		<view class="row b-b">
-			<text class="tit">产地</text>
-			<input class="input" type="text" v-model="productData.originPlace" placeholder="" placeholder-class="placeholder" />
+			<text class="tit">商品图片</text>
+			<text class="input">  (必填项) 请点击下面按钮添加</text>
+		</view>
+		<view class='upload-image-view'>
+			<block v-for="(image,index) in imageList" :key="index">
+				<view class='image-view'>
+					<image :src="image" :data-src="image" @tap="previewImage"></image>
+					<view class='del-btn' :data-index="index" @tap='deleteImage'>
+						<view class='baicha'></view>
+					</view>
+				</view>
+			</block>
+				<view class='add-view' v-if="imageList.length < imageLength" @tap="chooseImage">		 
+						<!-- 相机 -->
+						<view class="xiangji">
+									<view class="tixing"></view>
+									<view class='changfx'>
+										<view class='yuan1'>
+											<view class='yuan2'></view>
+										</view>
+									</view>
+								</view>
+		 
+						<!-- 十字架 -->
+		<!-- 				<view class="cross">
+							<view class="transverse-line"></view>
+							<view class="vertical-line"></view>
+						</view> -->		 
+				</view>	
+			<view class='info'>第一张作为商品图，其余为商品相册</view>
+		</view>
+		<view class="row b-b">
+			<text class="tit">进货价</text>
+			<input class="input" type="number" v-model="productData.purchasePrice" placeholder="元" placeholder-class="placeholder" />
 		</view>
 		<view class="row b-b"> 
 			<text class="tit">售价</text>
 			<input class="input" type="number" v-model="productData.sellPrice" placeholder="(必填项) 元" placeholder-class="placeholder" />
-		</view>
-		<view class="row b-b">
-			<text class="tit">工时费</text>
-			<input class="input" type="number" v-model="productData.labourFee" placeholder="元" placeholder-class="placeholder" />
-		</view>
-		<view class="row b-b">
-			<text class="tit">材料费</text>
-			<input class="input" type="number" v-model="productData.materialFee" placeholder="元" placeholder-class="placeholder" />
 		</view>
 		<view class="row b-b">
 			<text class="tit">商品库存</text>
@@ -39,7 +63,7 @@
 		</view>
 		<view class="row b-b"> 
 			<text class="tit">预警库存</text>
-			<input class="input" type="number" v-model="productData.alertQuantity" placeholder="" placeholder-class="placeholder" />
+			<input class="input" type="number" v-model="productData.alertQuantity" placeholder="预警库存" placeholder-class="placeholder" />
 		</view>
 		<view class="row b-b">
 			<text class="tit">计量单位</text>
@@ -47,12 +71,12 @@
 		</view>
 		<view class="row b-b"> 
 			<text class="tit">规格说明</text>
-			<input class="input" type="text" v-model="productData.specification" placeholder="15*15cm" placeholder-class="placeholder" />
+			<input class="input" type="text" v-model="productData.specification" placeholder="15*15厘米" placeholder-class="placeholder" />
 		</view>	
-<!-- 		<view class="row default-row">
+		<view class="row default-row">
 			<text class="tit">是否上架</text>
 			<switch :checked= "productData.shipment" color="#ff5500" @change="switchChange" />
-		</view> -->
+		</view>
 		<button class="add-btn" @click="confirm">提交</button>
 	</view>
 </template>
@@ -96,9 +120,6 @@
 					specification: '',
 					itemUuid:'',
 					unit: '',
-					originPlace:'',
-					labourFee: 0,
-					materialFee: 0,
 				},
 				formData : {
 				    'policy': '',
@@ -112,8 +133,8 @@
 				   },
 			}
 		},
-		onLoad(option){			
-			// console.log(JSON.stringify(option))
+		onLoad(option){
+			
 			let title = '新增商品信息';
 			if(option.type==='edit'){
 				title = '编辑商品信息'				
@@ -291,28 +312,41 @@
 					this.$api.msg('请填写初始库存');
 					return;
 				}
-/* 				if(this.OSSImageList.length === 0){
+				if(this.OSSImageList.length === 0){
 					this.$api.msg('请添加图片');
 					return;
-				} */
+				}
 			    let albumPics = this.OSSImageList;
-				/// 保存至DB
-				Request().post('stock/vehicle/stock/item/save', {
-						header: {
-							contentType: 'application/json'
-						},
-						data: data,				
-				    }).then(
-						res => {
-							//刷新商品列表页,this.$api.prePage()获取上一页实例，可直接调用上页所有数据和方法，在App.vue定义
-							// this.$api.prePage().refreshList(data, this.manageType);
-							this.$api.msg(`商品${this.manageType=='edit' ? '修改': '添加'}成功`);
-							setTimeout(()=>{
-								uni.navigateBack()
-								}, 800)
-						}
-					);
-				},
+				uni.request({
+					url: 'http://10.10.10.203:9195/stock/vehicle/stock/item/save',
+					method: 'post',
+					data: {
+						itemUuid:data.itemUuid,
+						classification: data.classification,
+						category: data.category,
+						itemName: data.itemName,
+						sellPrice: data.sellPrice,
+						purchasePrice: data.purchasePrice,
+						brandName: data.brandName,
+						description: data.description,
+						shipment: data.shipment,
+						initStock: data.initStock,
+						alertQuantity: data.alertQuantity,
+						specification: data.specification,
+						unit: data.unit,
+						albumPics: albumPics
+					},
+					success: res => {					
+						//刷新商品列表页,this.$api.prePage()获取上一页实例，可直接调用上页所有数据和方法，在App.vue定义
+						// this.$api.prePage().refreshList(data, this.manageType);
+						this.$api.msg(`商品${this.manageType=='edit' ? '修改': '添加'}成功`);
+						setTimeout(()=>{
+							uni.navigateBack()
+							}, 800)
+					}
+				})
+							
+			},
 		}
 	}
 </script>

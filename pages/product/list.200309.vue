@@ -24,28 +24,25 @@
 				</view>
 				<text class="cate-item yticon icon-fenlei1" @click="toggleCateMask('show')"></text>
 			</view>
-		    <scroll-view scroll-y="true"  >
-					<view class="list b-b" v-for="(item, index) in goodsList" :key="index">
-						<view class="wrapper">
-							
-							<view class="customer-box" >
-								<!-- <checkbox  color="#FFCC33" style="transform:scale(0.5)" /> -->
-								<switch type="checkbox" :checked="item.checked" style="width: 60upx;height: 30upx;"  @change="switchChange(item)"></switch>
-								<text class="customer">{{item.itemUuid}} {{item.itemName}}</text>
-							</view>
-							<view class="u-box">
-								<text class="name">{{item.category}} </text>
-								<text class="name">￥{{item.sellPrice}} </text>
-								<text class="name">{{item.brandName}} </text>
-								<text class="mobile">{{item.specification}}</text>
-								<text class="name" v-if="item.labourFee"> 工时￥{{item.labourFee}} </text>
-								<text class="name" v-if="item.materialFee"> 材料￥{{item.materialFee}}</text>
-							</view>
-						</view>
-						<text class="yticon icon-bianji" @click.stop="editItem('edit', item)"></text>
-					</view>
+		    <!-- <scroll-view scroll-y="true" @scrolltolower="loadData" > -->
+			<view class="goods-list">
+			<view 
+				v-for="(item, index) in goodsList" :key="index"
+				class="goods-item"
+				@click="navToDetailPage(item)"
+			>
+				<view class="image-wrapper">
+					<image :src="item.picAddr" mode="aspectFill"></image>
+				</view>
+				<text class="title clamp">{{item.itemName}}</text>
+				<view class="price-box">
+					<text class="price">{{item.sellPrice}}</text>
+					<text>已售 100</text>
+				</view>
+			</view>
+		    </view>
 			<uni-load-more :status="loadingType"></uni-load-more>
-			</scroll-view>
+			<!-- </scroll-view> -->
 		
 			<view class="cate-mask" :class="cateMaskState===0 ? 'none' : cateMaskState===1 ? 'show' : ''" @click="toggleCateMask">
 			<view class="cate-content" @click.stop.prevent="stopPrevent" @touchmove.stop.prevent="stopPrevent">
@@ -78,12 +75,10 @@
 		},
 		data() {
 			return {
-				//已选择的商品数量
-				totalChecked: 0,
 				// 分页实现页面懒加载
 				pageInfo:{
 					"total": 0, 
-					"size": 15,  // 每次懒加载的页面数据量
+					"size": 6,  // 每次懒加载的页面数据量
 					"current":1	 //	首次请求的初始页值，之后每请求一次就累加 1			
 				},
 				cateMaskState: 0, //分类面板展开状态
@@ -94,8 +89,7 @@
 				cateId: 0, //已选三级分类id
 				priceOrder: 0, //1 价格从低到高 2价格从高到低
 				cateList: [],
-				goodsList: [],
-				toAddItemList: [],
+				goodsList: []
 			};
 		},
 		
@@ -114,9 +108,7 @@
 			this.requesForData();
 		},
 		onReady() {
-			uni.hideLoading();
-			this.setStyle(0,true,'10');
-			this.setStyle(1,true,'0');
+			uni.hideLoading()
 		},
 		/*  */
 		onPageScroll(e){
@@ -140,119 +132,7 @@
 			console.log("onReachBottom")
 			this.loadData();
 		},
-		onNavigationBarButtonTap(e) {
-			if(e.index === 1){
-				uni.showToast({
-					title: '您已选'+e.badgeText.toString()+'件商品',
-					icon: "none",
-					duration: 500
-				})
-				
-				// 取消红点或者角标
-/* 				this.setStyle(e.index,false,"0");
-				uni.navigateTo({
-					url: "../order/cart" //跳转到未完成订单
-				}) */
-			}else if(e.index === 0){
-				uni.navigateTo({
-					url: "../product/newProduct" //跳转到新增
-				})
-			}else if(e.index === 2){
-				// 
-				this.$api.prePage().dtoList = this.toAddItemList ;
-				// console.log('pre'+this.$api.prePage().orderData.detail.length)
-				// console.log('toadd'+this.toAddItemList.length);
-				uni.navigateBack({
-					url: "../order/createOrder" //跳转到订单
-				})
-			}
-			
-		},
 		methods: {
-			/**
-			 * 修改导航栏buttons
-			 * index[number] 修改的buttons 下标索引，最右边索引为0
-			 * show[boolean] 显示还是隐藏角标或者红点
-			 * text[string] 需要修改的角标的text 内容 ，如果定义redDot 此参数无效 ，如果定义badgeText请设置具体，如果不用输入
-			 */
-			setStyle(index, show, text) {
-				// console.log(text)
-				let pages = getCurrentPages();
-				let page = pages[pages.length - 1];
-				// #ifdef APP-PLUS
-				let currentWebview = page.$getAppWebview();
-				if(show){
-					if(index === 0){
-						currentWebview.showTitleNViewButtonRedDot({index:index,text:text})
-					}else{
-						currentWebview.setTitleNViewButtonBadge({index:index,text:text})
-					}
-				}else{
-					if(index === 0){
-						currentWebview.hideTitleNViewButtonRedDot({index:index})
-					}else{
-						currentWebview.removeTitleNViewButtonBadge({index:index})
-					}
-				}				
-				// #endif
-			},
-			async switchChange(item){
-				item.checked = !item.checked;
-				// console.log(JSON.stringify(item));
-				if(item.checked){
-					// 获取商品详细
-					let requestItem={};
-					await Request().request({
-						url: 'stock/vehicle/stock/item/uid/'+ item.itemUuid,
-						method: 'get',
-						header: {},
-						params: {}
-					}).then(
-						res => {
-							// 返回的对象，多一层data封装，故写为response.data
-							requestItem = res.data;
-					}).catch(err => {
-						console.error('is catch', err)
-						this.err = err;
-						})
-					
-					// 设置数量默认值
-					requestItem = Object.assign(requestItem,{
-						discountPrice: requestItem.sellPrice,
-					})
-					requestItem.quantity = 1;
-					//加入vuex缓存,commit是同步方法
-					// this.$store.commit('addCartItems',requestItem);
-					this.toAddItemList.push(requestItem);
-					//修改角标值
-					this.totalChecked += 1;
-					this.setStyle(1,true,this.totalChecked);
-					uni.showToast({
-						    title: "选择商品成功！",
-							icon: 'info',
-							duration: 300
-							});
-				}else{
-					// this.$store.commit("deleteCartItem",item)
-					// 删除临时数组中的值
-					let index = this.toAddItemList.findIndex(item=>item.itemUuid === requestItem.itemUuid);
-					this.toAddItemList.splice(index,10);
-					this.totalChecked -= 1;
-					this.setStyle(1,true,this.totalChecked);
-					uni.showToast({
-						    title: "取消商品成功！",
-							icon: 'info',
-							duration: 300
-							});
-				}
-					
-			},
-			//
-			editItem(type, item){
-				uni.navigateTo({
-					url: `/pages/product/newProduct?type=${type}&data=`+ JSON.stringify(item)
-				})
-			},
 			// 
 			requesForData:function(){
 				Request().request({
@@ -267,23 +147,16 @@
 				).then(
 					res => {
 						// json 和 str 转换 JSON.stringify  JSON.parse
-						// console.log('res--->>>'+ JSON.stringify(res.data.records))
+						// console.log('res--->>>'+ JSON.stringify(res))
 						let pdtArr = res.data.records;
 						// 打印类型
 						// console.log(Object.prototype.toString.call(pdtArr));
 						this.goodsList = this.goodsList.concat(pdtArr);
-						// 每个item增加一个checked字段表示 是否选中
-						this.goodsList.forEach(item=>{
-							item = Object.assign(item,{
-								checked: false,
-								quantity: 1 // 默认数量
-							})
-						})
 						// 懒加载机制 --> 加载一次后累加页数
 						this.pageInfo.total = res.data.total;
 						this.pageInfo.current  += 1;
-						// console.log(this.pageInfo.total);
-						// console.log(this.pageInfo.current +'/ '+this.pageInfo.size );
+						console.log(this.pageInfo.total);
+						console.log(this.pageInfo.current +'/ '+this.pageInfo.size );
 						// console.log(goodsList.length);
 					}
 				).catch(err => {
@@ -402,85 +275,12 @@
 </script>
 
 <style lang="scss">
-	page{
-		padding-bottom: 10upx;
-	}
-	.content{
-		position: relative;
-		background: $page-color-base;
-		padding-top: 70upx;
-	}
-	.list{
-		display: flex;
-		align-items: center;
-		padding: 20upx 30upx;;
-		background: #fff;
-		position: relative;
-	}
-	.wrapper{
-		display: flex;
-		flex-direction: column;
-		flex: 1;
-	}
-	.customer-box{
-		display: flex;
-		flex-direction: row;
-		align-items: baseline ;
-		.tag{
-			font-size: 24upx;
-			color: $base-color;
-			margin-right: 10upx;
-			background: #fffafb;
-			border: 1px solid #ffb4c7;
-			border-radius: 4upx;
-			padding: 4upx 10upx;
-			line-height: 1;
-		}
-		.customer{
-			font-size: 30upx;
-			color: $font-color-dark;
-		}
-	}
-	.u-box{
-		font-size: 28upx;
-		color: $font-color-light;
-		margin-top: 16upx;
-		.name{
-			margin-right: 30upx;
-		}
-	}
-	.icon-bianji{
-		display: flex;
-		align-items: center;
-		height: 80upx;
-		font-size: 40upx;
-		color: $font-color-light;
-		padding-left: 30upx;
-	}
-	
-	.add-btn{
-		position: fixed;
-		left: 30upx;
-		right: 30upx;
-		bottom: 16upx;
-		z-index: 95;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 690upx;
-		height: 80upx;
-		font-size: 32upx;
-		color: #fff;
-		background-color: $base-color;
-		border-radius: 10upx;
-		box-shadow: 1px 2px 5px rgba(219, 63, 96, 0.4);		
-	}
-/* 	 .content{
+	page, .content{
 		background: $page-color-base;
 	}
 	.content{
 		padding-top: 96upx;
-	} */
+	}
 
 	.navbar{
 		position: fixed;
