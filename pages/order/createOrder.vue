@@ -167,6 +167,7 @@
 					addr: null
 				},
 				itemShowList:[],
+				dtoList:[],
 			}
 		},
 		activated() {
@@ -175,6 +176,7 @@
 			// 只要进入该页面就进行刷新，因为onLoad()只加载一次，
 			// https://blog.csdn.net/qq_27047215/article/details/98943080
 			this.loadData();
+			this.orderData.detail = this.orderData.detail.concat(this.dtoList);
 			this.calcTotal();  //计算总价
 		},
 		onLoad(option){

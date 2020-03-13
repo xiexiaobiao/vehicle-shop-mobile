@@ -8,6 +8,7 @@ const store = new Vuex.Store({
 		hasLogin: false,
 		userInfo: {},
 		// session周期有效
+		customerInfo:{},
 		items: [{
 					idItem: 3,
 					itemUuid: 'SP100034',
@@ -84,10 +85,16 @@ const store = new Vuex.Store({
 			const cartItem = state.items.find(item => item.idItem === idItem)
 			cartItem.quantity = quantity;
 		},
+		addCustomerInfo(state,provider){
+			state.customerInfo = provider;
+		},
+		delCustomerInfo(){
+			state.customerInfo = {};
+		}
 	},
 	// 异步
 	actions: {
-		//// {commit} 解构 context对象，context与store实例具有相同的属性和方法。这里commit 就是 store.commit
+		// {commit} 解构 context对象，context与store实例具有相同的属性和方法。这里commit 就是 store.commit
 		emptyCartAsync({commit}){
 		     setTimeout(()=>{ commit("emptyCart"),3000})
 		     },
@@ -97,10 +104,14 @@ const store = new Vuex.Store({
 		/* emptyCartAsync: context => {
 			return context.commit('emptyCart')
 		} */
+		
 	},
 	getters:{
 		cartItems: state => {
 			return state.items;
+		},
+		cusInfo: state => {
+			return state.customerInfo;
 		}
 	}
 })

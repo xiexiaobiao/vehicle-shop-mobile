@@ -1,5 +1,5 @@
 <template>
-	<view>
+	<view >
 		<view>
 <!-- 			<cu-custom bgColor="bg-gradual-blue" :isBack="true">
 				<block slot="backText">返回</block>
@@ -7,8 +7,14 @@
 				<block slot="right">信息</block>
 			</cu-custom> -->
 		</view>
-		<view class="content">
+
+		<view class="content">				
 			<view class="navbar" :style="{position:headerPosition,top:headerTop}">
+				<view>
+				   <uni-search-bar radius="100" placeholder="名称关键字" bgColor="#EEEEEE" @cancel="searchCancel" @confirm="search" />
+			    </view>
+				<view style="display: flex; flex-direction:row;">
+				
 				<view class="nav-item" :class="{current: filterIndex === 0}" @click="tabClick(0)">
 					综合排序
 				</view>
@@ -23,6 +29,8 @@
 					</view>
 				</view>
 				<text class="cate-item yticon icon-fenlei1" @click="toggleCateMask('show')"></text>
+				</view>
+				
 			</view>
 		    <scroll-view scroll-y="true"  >
 					<view class="list b-b" v-for="(item, index) in goodsList" :key="index">
@@ -51,16 +59,18 @@
 			<view class="cate-content" @click.stop.prevent="stopPrevent" @touchmove.stop.prevent="stopPrevent">
 				<scroll-view scroll-y class="cate-list" >
 					<view v-for="item in cateList" :key="item.id">
-						<view class="cate-item b-b two">{{item.name}}</view>
-						<view 
+						<view class="cate-item b-b" :class="{active: item.id==cateId}" @click="changeCate(item)">{{item.name}}</view>
+<!-- 						<view 
 							v-for="tItem in item.child" :key="tItem.id" 
 							class="cate-item b-b" 
 							:class="{active: tItem.id==cateId}"
 							@click="changeCate(tItem)">
 							{{tItem.name}}
-						</view>
+						</view> -->
 					</view>
+				<button type="primary" plain="true" @click="cancelCate"> 取消分类</button>
 				</scroll-view>
+				
 			</view>
 		</view>		
 	  </view>
@@ -71,6 +81,7 @@
 <script>
 	import Request from '@/plugins/request/js/index.js'
 	import uniLoadMore from '@/components/uni-load-more/uni-load-more.vue';
+	import uniSearchBar from '@/components/uni-search-bar/uni-search-bar.vue'
 	
 	export default {
 		components: {
@@ -78,13 +89,14 @@
 		},
 		data() {
 			return {
+				itemName: '',//模糊查询
 				//已选择的商品数量
 				totalChecked: 0,
 				// 分页实现页面懒加载
 				pageInfo:{
 					"total": 0, 
 					"size": 15,  // 每次懒加载的页面数据量
-					"current":1	 //	首次请求的初始页值，之后每请求一次就累加 1			
+					"current":1	 ,//	首次请求的初始页值，之后每请求一次就累加 1					
 				},
 				cateMaskState: 0, //分类面板展开状态
 				headerPosition:"fixed",
@@ -96,6 +108,7 @@
 				cateList: [],
 				goodsList: [],
 				toAddItemList: [],
+				category: '' //查询条件：类别
 			};
 		},
 		
@@ -143,9 +156,9 @@
 		onNavigationBarButtonTap(e) {
 			if(e.index === 1){
 				uni.showToast({
-					title: '您已选'+e.badgeText.toString()+'件商品',
+					title: '您已选'+ e.badgeText.toString() +'件商品',
 					icon: "none",
-					duration: 500
+					duration: 800
 				})
 				
 				// 取消红点或者角标
@@ -160,15 +173,31 @@
 			}else if(e.index === 2){
 				// 
 				this.$api.prePage().dtoList = this.toAddItemList ;
-				// console.log('pre'+this.$api.prePage().orderData.detail.length)
-				// console.log('toadd'+this.toAddItemList.length);
+				console.log('pre '+this.$api.prePage().orderData.detail.length)
+				console.log('toadd '+this.toAddItemList.length);
 				uni.navigateBack({
-					url: "../order/createOrder" //跳转到订单
+					url: "../order/editOrder" //跳转到订单
 				})
 			}
 			
 		},
 		methods: {
+			search: function(e){
+				this.itemName = e.value ; 
+				//初始化查询数据
+				this.goodsList = [];
+				this.loadingType = 'more';
+				this.pageInfo.current = 1;
+				this.loadData('add', 1);
+			},
+			searchCancel: function(){
+				this.itemName = '' ;
+				//初始化查询数据
+				this.goodsList = [];
+				this.loadingType = 'more';
+				this.pageInfo.current = 1;
+				this.loadData('add', 1);
+			},
 			/**
 			 * 修改导航栏buttons
 			 * index[number] 修改的buttons 下标索引，最右边索引为0
@@ -199,9 +228,9 @@
 			async switchChange(item){
 				item.checked = !item.checked;
 				// console.log(JSON.stringify(item));
+				let requestItem={};
 				if(item.checked){
-					// 获取商品详细
-					let requestItem={};
+					// 获取商品详细					
 					await Request().request({
 						url: 'stock/vehicle/stock/item/uid/'+ item.itemUuid,
 						method: 'get',
@@ -236,7 +265,7 @@
 					// this.$store.commit("deleteCartItem",item)
 					// 删除临时数组中的值
 					let index = this.toAddItemList.findIndex(item=>item.itemUuid === requestItem.itemUuid);
-					this.toAddItemList.splice(index,10);
+					this.toAddItemList.splice(index,1);
 					this.totalChecked -= 1;
 					this.setStyle(1,true,this.totalChecked);
 					uni.showToast({
@@ -255,13 +284,15 @@
 			},
 			// 
 			requesForData:function(){
-				Request().request({
+			return	Request().request({
 					url:'stock/vehicle/stock/item/list',
 					method: 'get',
 					header:{},
 					params: {
 						'pageNum': this.pageInfo.current,
 						'pageSize': this.pageInfo.size,
+						'category': this.category,
+						'itemName': this.itemName
 					  },
 					}				
 				).then(
@@ -283,7 +314,7 @@
 						this.pageInfo.total = res.data.total;
 						this.pageInfo.current  += 1;
 						// console.log(this.pageInfo.total);
-						// console.log(this.pageInfo.current +'/ '+this.pageInfo.size );
+						// console.log(this.pageInfo.current +' / '+this.pageInfo.size );
 						// console.log(goodsList.length);
 					}
 				).catch(err => {
@@ -293,16 +324,41 @@
 			},
 			//加载分类
 			async loadCateList(fid, sid){
-				let list = await this.$api.json('cateList');
+				await Request().request({
+					url: 'stock/vehicle/stock/category/list',
+					method: 'get',
+					header: {},
+					params: {
+						'pageNum': 1,
+						'pageSize': 99,
+					}
+				}).then(
+					res => {
+						// 返回的对象，多一层data封装，故写为response.data
+						// console.log(JSON.stringify(res.records));
+						let cateArr = res.data.records;
+						let i = 0;
+						cateArr.forEach(
+							item=>{
+									this.cateList.push({name:item,id:i});
+									i++;
+								}
+						)
+					// console.log(this.cateList);	
+				}).catch(err => {
+					console.error('is catch', err)
+					this.err = err;
+					})
+				/* let list = await this.$api.json('cateList');
 				let cateList = list.filter(item=>item.pid == fid);
 				
 				cateList.forEach(item=>{
 					let tempList = list.filter(val=>val.pid == item.id);
 					item.child = tempList;
 				})
-				this.cateList = cateList;
+				this.cateList = cateList; */
 			},
-			//加载商品 ，带下拉刷新和上滑加载
+			//加载商品 ，带下拉刷新和上滑加载 ('refresh', 1);
 			async loadData(type='add', loading) {
 				console.log("loadData   " + this.loadingType)
 				//没有更多直接返回
@@ -315,38 +371,42 @@
 								
 				// 请求后台数据
 				await this.requesForData();
-				console.log("this.goodsList: " + this.goodsList.length)
+				
+				// console.log("this.goodsList: " + this.goodsList.length)
 										
-					if(type === 'refresh'){
-					//筛选，测试数据直接前端筛选了
-					if(this.filterIndex === 1){
-						this.goodsList.sort((a,b)=>b.sellPrice - a.sellPrice)
-					}
-					if(this.filterIndex === 2){
-						this.goodsList.sort((a,b)=>{
-							if(this.priceOrder == 1){
-								return a.sellPrice - b.sellPrice;
-							}
-							return b.sellPrice - a.sellPrice;
-						})
-					}
+				if(type === 'refresh'){
+				//直接前端筛选
+				if(this.filterIndex === 1){
+					this.goodsList.sort((a,b)=>b.sellPrice - a.sellPrice)
+				}
+				if(this.filterIndex === 2){
+					this.goodsList.sort((a,b)=>{
+						if(this.priceOrder == 1){
+							return a.sellPrice - b.sellPrice;
+						}
+						return b.sellPrice - a.sellPrice;
+					})
+				}
 				}
 												
 				//判断是否还有下一页，有是more  没有是nomore
-				if(this.pageInfo.total < (this.pageInfo.current-1) * this.pageInfo.size){
-					this.loadingType = 'nomore';
-				}else{
+				if(this.pageInfo.total <= (this.pageInfo.current-1) * this.pageInfo.size){
+					this.loadingType = 'nomore';					
+				}else if(this.pageInfo.total > (this.pageInfo.current-1) * this.pageInfo.size){
 					this.loadingType = 'more';
 				}
+				console.log(this.loadingType);
+				// 
 				if(type === 'refresh'){
 					if(loading == 1){
 						uni.hideLoading()
 					}else{
 						uni.stopPullDownRefresh();
 					}
-				}						
+				}
+				//					
 			},
-			//排序点击
+			//排序点击，只有前端处理
 			tabClick(index){
 				if(this.filterIndex === index && index !== 2){
 					return;
@@ -378,15 +438,31 @@
 			//分类点击
 			changeCate(item){
 				this.cateId = item.id;
+				this.category = item.name;
 				this.toggleCateMask();
 				uni.pageScrollTo({
 					duration: 300,
 					scrollTop: 0
 				})
-				this.loadData('refresh', 1);
-				uni.showLoading({
+				//初始化查询数据
+				this.goodsList = [];
+				this.loadingType = 'more';
+				this.pageInfo.current = 1;
+				this.loadData('add', 1);
+/* 				uni.showLoading({
 					title: '正在加载'
-				})
+				}) */
+			},
+			//取消分类浏览
+			cancelCate(){
+				this.toggleCateMask();
+				//初始化查询数据
+				this.goodsList = [];
+				this.loadingType = 'more';
+				this.pageInfo.current = 1;
+				this.category = '';
+				this.loadData('add', 1);
+
 			},
 			//详情
 			navToDetailPage(item){
@@ -408,7 +484,7 @@
 	.content{
 		position: relative;
 		background: $page-color-base;
-		padding-top: 70upx;
+		padding-top: 160upx;
 	}
 	.list{
 		display: flex;
@@ -484,11 +560,12 @@
 
 	.navbar{
 		position: fixed;
+		flex-direction:column;
 		left: 0;
 		top: var(--window-top);
 		display: flex;
 		width: 100%;
-		height: 80upx;
+		height: 160upx;
 		background: #fff;
 		box-shadow: 0 2upx 10upx rgba(0,0,0,.06);
 		z-index: 10;

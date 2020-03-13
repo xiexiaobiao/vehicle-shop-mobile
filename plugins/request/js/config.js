@@ -1,4 +1,4 @@
-import Interceptor from './core/interceptor';
+﻿import Interceptor from './core/interceptor';
 import Request from './index';
 import TokenApi from '../api/token';
 
@@ -14,8 +14,8 @@ export const globalInterceptor = {
  * `header` 中`content-type`设置特殊参数 或 配置其他会导致触发 跨域 问题，出现跨域会直接进入响应拦截器的catch函数中
  */
 export const config = {
-    baseURL: 'http://10.10.10.203:9195',
-	// baseURL: 'http://47.115.127.40:9195',
+    baseURL: 'http://10.10.10.203:9195', 
+	// baseURL: '生产环境Ip',
     header: {
         // 'X-Auth-Token': 'xxxx',
         contentType: 'application/x-www-form-urlencoded'

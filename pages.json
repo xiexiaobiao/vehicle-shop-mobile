@@ -52,7 +52,28 @@
 		{
 			"path": "pages/order/order-list",
 			"style": {
-				"navigationBarTitleText": "订单列表"
+				"navigationBarTitleText": "订单列表",
+				"app-plus": {
+					"titleNView": {
+						"type": "default",
+						"titleColor": "#fff",
+						"backgroundColor": "#007AFF",
+						"buttons": [{
+							"fontSrc": "/static/uni.ttf",
+							"text": "\ue401",
+							"width": "20px",
+							"fontSize": "28px",
+							"color": "#fff",
+							"background": "rgba(0,0,0,0)"
+						}],
+						"searchInput": {
+							"backgroundColor": "#fff",
+							"borderRadius": "6px",
+							"placeholder": "请输入关键字",
+							"disabled": false
+						}
+					}
+				}
 			}
 		},
 		{
@@ -76,7 +97,7 @@
 							{
 								"text": "已选",
 								"fontSize": "14",
-								"badgeText": "12"
+								"badgeText": "0"
 							},
 							{
 								"text": "返回",
@@ -174,6 +195,12 @@
 			"path": "pages/order/editOrder",
 			"style": {
 				"navigationBarTitleText": "订单编辑"
+			}
+		},
+		{
+			"path": "pages/order/orderDraft",
+			"style": {
+				"navigationBarTitleText": "未完成订单"
 			}
 		}
 	],

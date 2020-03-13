@@ -6,16 +6,19 @@
 		</view>
 		<view class="row b-b">
 			<text class="tit">类别</text>
-			<input class="input" type="text" v-model="productData.category" placeholder="(必填项)" placeholder-class="placeholder" />
-		</view>
+			<uni-combox label="" labelWidth="50px" :candidates="cateCandidates" placeholder="请选择类别" emptyTips="无匹配项" v-model="productData.category"></uni-combox>
+			<button type="primary" style="font-size: small; width: 150upx;">添加</button>
+<!-- 			<input class="input" type="text" v-model="productData.category" placeholder="(必填项)" placeholder-class="placeholder" />
+ -->		</view>
 		<view class="row b-b">
 			<text class="tit">商品名称</text>
 			<input class="input" type="text" v-model="productData.itemName" placeholder="(必填项)" placeholder-class="placeholder" />
 		</view>
 		<view class="row b-b">
 			<text class="tit">品牌</text>
-			<input class="input" type="text" v-model="productData.brandName" placeholder="" placeholder-class="placeholder" />
-			<text class="yticon icon-shouhuodizhi"></text>
+			<uni-combox label="" labelWidth="50px" :candidates="brandCandidates" placeholder="请选择品牌" emptyTips="无匹配项" v-model="productData.brandName"></uni-combox>
+<!-- 			<input class="input" type="text" v-model="productData.brandName" placeholder="" placeholder-class="placeholder" />
+ -->		<button type="primary" style="font-size: small; width: 150upx;">添加</button>
 		</view>
 		<view class="row b-b">
 			<text class="tit">产地</text>
@@ -74,6 +77,7 @@
 	export default {
 		data() {
 			return {
+				
 				imageList: [], //保存图片路径集合
 				imageLength: 3, //限制图片张数
 				sourceTypeIndex: 2, //添加方式限制
@@ -110,6 +114,8 @@
 					//让服务端返回200,不然，默认会返回204
 					'success_action_status': '200',
 				   },
+				cateCandidates:[],
+				brandCandidates:[],
 			}
 		},
 		onLoad(option){			
@@ -125,8 +131,7 @@
 			})
 			
 			// 使用封装的 request
-			let r = Request();
-			let instance = r.request({
+			Request().request({
 				url:'stock/vehicle/stock/item/maxId',
 				method: 'get',
 				header:{},
@@ -144,6 +149,48 @@
                 console.error('is catch', err)
                 this.err = err;
              });
+			 
+			 // 使用封装的 request  类别列表
+			 Request().request({
+			 	url:'stock/vehicle/stock/category/list',
+			 	method: 'get',
+			 	header:{},
+			 	params: {
+					'pageNum': 1 ,
+					'pageSize': 999,
+				},
+			 	}				
+			 ).then(
+			 	res => {
+			 		// json 和 str 转换 JSON.stringify  JSON.parse
+			 		// console.log('res--->>>'+ JSON.stringify(res.data))
+			 		this.cateCandidates = res.data.records;
+			 	}
+			 ).catch(err => {
+			     console.error('is catch', err)
+			     this.err = err;
+			  });
+			  
+			  // 使用封装的 request 品牌列表
+			  Request().request({
+			  	url:'stock/vehicle/stock/brand/list',
+			  	method: 'get',
+			  	header:{},
+			  	params: {
+					'pageNum': 1 ,
+					'pageSize': 999,
+				},
+			  	}				
+			  ).then(
+			  	res => {
+			  		// json 和 str 转换 JSON.stringify  JSON.parse
+			  		// console.log('res--->>>'+ JSON.stringify(res.data))
+			  		this.brandCandidates = res.data.records;
+			  	}
+			  ).catch(err => {
+			      console.error('is catch', err)
+			      this.err = err;
+			   });
 			
 			
 /* 			uni.request({
@@ -258,10 +305,10 @@
 				},
 				///////////
 				
-			switchChange(e){
+/* 			switchChange(e){
 				let value = e.target.value
 				this.$set(this.productData, 'shipment', value)   // 将点击改变的状态赋给productData.shipment
-			},			
+			},	 */		
 			//品牌选择地址
 			chooseLocation(){
 				uni.chooseLocation({

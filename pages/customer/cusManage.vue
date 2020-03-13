@@ -18,7 +18,15 @@
 		</view>
 		<view class="row b-b">
 			<text class="tit">性别</text>
-			<switch :checked="customerData.gender" color="#fa436a" @change="switchChange" />
+			<radio-group name="gender" v-model="customerData.gender" @change="radioChange">
+				<label>
+					<radio value="1" /><text>男</text>
+				</label>
+				<label>
+					<radio value="0" /><text>女</text>
+				</label>
+			</radio-group>
+			<!-- <switch :checked="customerData.gender" color="#fa436a" @change="switchChange" /> -->
 		</view>
 		<view class="row b-b">
 			<text class="tit">地址</text>
@@ -97,6 +105,10 @@
 			}			
 		},
 		methods: {
+			radioChange(e){
+				let value = e.target.value
+				this.$set(this.customerData, 'gender', value) 
+			},			
 			switchChange(e){
 				let value = e.target.value
 				this.$set(this.customerData, 'gender', value) 

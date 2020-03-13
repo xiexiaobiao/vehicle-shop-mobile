@@ -21,10 +21,7 @@
 			<view class="g-header b-b">
 				<image class="logo" src="https://biao-aliyun-oss-pic-bucket.oss-cn-shenzhen.aliyuncs.com/images/logo-samll.png"></image>
 				<text class="name">鼎泰汽车服务中心</text>
-				<navigator url='/pages/product/list' open-type="navigate"> 
-					<button type="primary" style="font-size: small; width: 200upx;height: 50upx; position: relative; left: 200upx;">添加商品</button> 
-				</navigator>
-				<!-- <text style="color: #0000ff; position: relative; margin-left: 250upx;" class="name"  @click="addItems">添加商品</text> -->
+				<text style="color: #0000ff; position: relative; margin-left: 250upx;" class="name"  @click="addItems">添加商品</text>
 			</view>
 			<!-- 商品列表 -->
 			<block  v-for="(item, index) in orderData.detail" :key="index" @click="showDetail(item)">
@@ -35,7 +32,7 @@
 						<text class="title clamp">{{item.itemUuid}} {{item.itemName}}</text>					
 						<text class="spec">￥{{item.sellPrice}} / {{item.specification}} / {{item.brandName}} / {{item.unit}}</text>
 						<view class="price-box">	
-							<input type="number" v-model="item.discountPrice" @blur="handlePrice" style="color: #ff0000; font-size: small; width: 100upx;"/>
+							<input type="number" v-model="item.discountPrice" @blur="handlePrice" style="font-size: small; width: 100upx;"/>
 							<text class="number">{{item.remark}}</text>
 						</view>	
 						<uni-number-box  style="margin-left: 450upx;" :min="0" :max="10" 
@@ -117,7 +114,6 @@
 		components: {uniNumberBox},
 		data() {
 			return {
-				pageType: 'new', //
 				isChecked: false  ,  
 				res:{status:422},
 				maskState: 0, //优惠券面板显示状态
@@ -180,48 +176,29 @@
 			// 只要进入该页面就进行刷新，因为onLoad()只加载一次，
 			// https://blog.csdn.net/qq_27047215/article/details/98943080
 			// this.loadData();
-			console.log('dtoList2 '+ this.dtoList.length);
-			// 每次只累加一次
+			console.log('dtoList '+ this.dtoList.length);
 			this.orderData.detail = this.orderData.detail.concat(this.dtoList);
-			this.dtoList = [];
-			/* this.dtoList.forEach(
-				item=>{
-					let index = this.orderData.detail.findIndex( product=> product.itemUuid === item.itemUuid )
-					if (index != -1){
-						this.orderData.detail.push(item)
-					}
-				}
-			) */
 			this.calcTotal();  //计算总价
 			
 		},
 		onLoad(option){
-			console.log('dtoList1 '+ this.dtoList.length);
-			let title = '创建新订单';
-			if(option.type==='edit'){
-				this.pageType = 'edit'
-				title = '编辑订单'
-				uni.showToast({
-					title:'拼命加载中...',
-					icon:'loading'
-				})			
-				// 传参,这里必须使用JSON.parse，否则取值失败！！！！！！！
-				let orderData = JSON.parse(option.data);
-					this.orderData.orderUuid = orderData.orderUuid;
-					this.orderData.clientUuid = orderData.clientUuid;
-					this.orderData.generateDate = orderData.generateDate;
-					this.orderData.amount = orderData.amount;
-					this.orderData.paidStatus = orderData.paidStatus;
-					this.orderData.detail = orderData.detail;
-					this.orderData.package = orderData.package;
-				// 
-				// this.loadData();
-				this.getClientInfo();
-				this.calcTotal();  //计算总价				
-			}
-			uni.setNavigationBarTitle({
-				title
+			uni.showToast({
+				title:'拼命加载中...',
+				icon:'loading'
 			})			
+			// 传参,这里必须使用JSON.parse，否则取值失败！！！！！！！
+			let orderData = JSON.parse(option.data);
+				this.orderData.orderUuid = orderData.orderUuid;
+				this.orderData.clientUuid = orderData.clientUuid;
+				this.orderData.generateDate = orderData.generateDate;
+				this.orderData.amount = orderData.amount;
+				this.orderData.paidStatus = orderData.paidStatus;
+				this.orderData.detail = orderData.detail;
+				this.orderData.package = orderData.package;
+			// 
+			// this.loadData();
+			this.getClientInfo();
+			this.calcTotal();  //计算总价
 		},
 		onReady() {
 			uni.hideToast();
@@ -262,7 +239,7 @@
 			},
 			//删除
 			deleteCartItem(index){
-				// console.log(index)
+				console.log(index)
 				// 删除vuex中对象
 				// let idItemToDel = this.cartItems[index].idItem;
 				// this.deleteCartItem(0);
@@ -396,45 +373,7 @@
 					})
 					return; 
 				}
-				//创建
-				if(this.pageType === 'new'){
-					this.orderData.clientUuid = this.customerData.clientUuid;
-					uni.showModal({
-						content:"确定提交订单？",
-						success: (e) => {
-							if(e.confirm){
-								//todo  保存订单处理
-								// vuex使用,引入map辅助函数后，也可以直接使用，或者使用$store语法等效
-								// this.emptyCart();
-								// this.$store.commit("emptyCart")
-								// 异步清空购物车缓存
-								this.$store.dispatch("emptyCartAsync");
-								/// 保存至db
-								Request().post('business/vehicle/business/create', {
-										header: {
-											contentType: 'application/json'
-										},
-										data: this.orderData,				
-								    }).then(
-										res => {
-											//this.$api.prePage()获取上一页实例，可直接调用上页所有数据和方法，在App.vue定义
-											//this.$api.prePage().refreshList(data, this.manageType);
-											this.$api.msg(`订单创建成功`);
-											this.$api.hidemsg;
-											this.itemShowList=[];
-											setTimeout(()=>{
-												uni.navigateBack()
-											 }, 800)
-										}
-									);
-								uni.redirectTo({
-									url:'/pages/order/order-list',
-								})
-							}
-						}
-					})
-				}else{
-				//更新
+				//
 				uni.showModal({
 					content:"确定提交订单？",
 					success: (e) => {
@@ -456,8 +395,9 @@
 									res => {
 										//this.$api.prePage()获取上一页实例，可直接调用上页所有数据和方法，在App.vue定义
 										//this.$api.prePage().refreshList(data, this.manageType);
-										this.$api.msg(`订单修改成功`);
+										this.$api.msg(`订单提交成功`);
 										this.$api.hidemsg;
+										this.itemShowList=[];
 										setTimeout(()=>{
 											uni.navigateBack()
 										 }, 800)
@@ -469,7 +409,6 @@
 						}
 					}
 				})
-				}
 			}
 
 		}

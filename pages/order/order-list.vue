@@ -45,19 +45,24 @@
 								<image class="goods-img" :src="goodsItem.picAddr" mode="aspectFill"></image>
 							</view>
 						</scroll-view> -->
-						<view 
+						
+						<view class="goods-box-single" @click="showOrder(item)">
+							<text class="title clamp">{{item.clientName}}   {{item.phone}}   {{item.vehiclePlate}}</text>
+						</view>
+						
+						<!-- <view 
 							v-if="item.detail.length >= 1" 
 							class="goods-box-single"
 							v-for="(goodsItem, goodsIndex) in item.detail" :key="goodsIndex"
 							@click="showOrder(item)"
-						>
+						> -->
 							<!-- <image class="goods-img" :src="goodsItem.picAddr" mode="aspectFill"></image> -->
-							<view class="right">
+						<!-- 	<view class="right">
 								<text class="title clamp">{{goodsItem.itemUuid}} {{goodsItem.itemName}}</text>
 								<text class="attr-box">{{goodsItem.specification}}  x {{goodsItem.quantity}}</text>
 								<text class="price">{{goodsItem.discountPrice}}</text>
 							</view>
-						</view>
+						</view> -->
 						
 						<view class="price-box">
 							共
@@ -92,13 +97,15 @@
 		},
 		data() {
 			return {
+				clientName: '', // 查询条件
+				vehiclePlate: '',// 查询条件
 				tabCurrentIndex: 0,
-				paidStatus: 2 ,
+				paidStatus: 2 , // 查询条件
 				cancelStatus: '',
 				// 分页实现页面懒加载
 				pageInfo:{
 					"total": 0,
-					"size": 4,  // 每次加载的页面数据量
+					"size": 8,  // 每次加载的页面数据量
 					"current":1	 //	首次请求初始值，之后每请求一次就累加1				
 				},
 				navList: [{
@@ -157,6 +164,112 @@
 			// #endif
 			
 		},
+		
+		/**
+		 * 当 searchInput 配置 disabled 为 true 时触发
+		 */
+		onNavigationBarSearchInputClicked(e) {
+			console.log('事件执行了')
+			uni.navigateTo({
+				url: '/pages/order/srchdetail'
+			});
+		},
+		/**
+		 *  点击导航栏 右侧 button 时触发 
+		 */
+		onNavigationBarButtonTap() {
+			//注意：： 网页测试这里会报错，真机运行可以！！！
+			const currentWebview = this.$mp.page.$getAppWebview();
+			currentWebview.setTitleNViewSearchInputText("");
+			
+			// 初始化查询条件
+			this.navList[this.tabCurrentIndex].orderList = [];
+			this.pageInfo.current = 1;
+			this.clientName = '';
+			this.vehiclePlate = '';
+			this.loadData()
+/* 			uni.showModal({
+				title: '提示',
+				content: '用户点击了功能按钮，这里仅做展示。',
+				success: res => {
+					if (res.confirm) {
+						console.log('用户点击了确定');
+					}
+				}
+			}); */
+		},
+		/**
+			 * 当 searchInput 输入时触发
+			 */
+/* 		onNavigationBarSearchInputChanged(e) {
+			let text = e.text;
+			if (!text) {
+				this.isHistory = true;
+				this.historyList = [];
+				this.historyList = uni.getStorageSync('search:history');
+	
+				return;
+			} else {
+				this.isHistory = false;
+				this.getInputtips(text);
+			}
+		}, */
+			/**
+			 * 点击软键盘搜索按键触发
+			 */
+		onNavigationBarSearchInputConfirmed(e) {
+			let text = e.text;
+			if (text) {
+				// 初始化查询条件
+				this.navList[this.tabCurrentIndex].orderList = [];
+				this.clientName = text;
+				this.vehiclePlate = text;
+				this.pageInfo.current = 1;
+				this.loadData()
+			}
+			
+			
+			/* if (!text) {
+				this.isHistory = true;
+				this.historyList = [];
+				this.historyList = uni.getStorageSync('search:history');
+				uni.showModal({
+					title: '提示',
+					content: '请输入内容。',
+					success: res => {
+						if (res.confirm) {
+						}
+					}
+				});
+				return;
+			} else {
+				uni.showModal({
+					title: '提示',
+					content: `您输入的内容为"${text}",如果点击确定,将记录到历史搜索,并返回.如果取消不做操作`,
+					success: res => {
+						if (res.confirm) {
+							util.setHistory(text);
+							uni.navigateBack();
+						}
+					}
+				});
+			} */
+		},
+			/**
+			 *  点击导航栏 buttons 时触发
+			 */
+/* 		onNavigationBarButtonTap() {
+			uni.showModal({
+				title: '提示',
+				content: '点击确定，修改输入框的内容为abc',
+				success: res => {
+					if (res.confirm) {
+						const currentWebview = this.$mp.page.$getAppWebview();
+						currentWebview.setTitleNViewSearchInputText("abc");
+					}
+				}
+			});
+		}, */
 		 
 		methods: {
 			requestForCancelOrder: function(value){
@@ -212,8 +325,9 @@
 			},
 			//修改订单
 			editOrder(item){
+				let type = 'edit';
 				uni.navigateTo({
-					url: `/pages/order/editOrder?data=${JSON.stringify(item)}`
+					url: `/pages/order/editOrder?type=${type}&data=${JSON.stringify(item)}`
 				})
 			},
 			//订单详细
@@ -258,6 +372,8 @@
 						'pageNum': this.pageInfo.current ,
 						'pageSize': this.pageInfo.size,
 						'paidStatus': this.paidStatus,
+						'clientName': this.clientName, 
+						'vehiclePlate': this.vehiclePlate,
 					  },
 					}				
 				).then(
@@ -570,7 +686,7 @@
 		/* 单条商品 */
 		.goods-box-single{
 			display: flex;
-			padding: 20upx 0;
+			padding: 10upx 0;
 			.goods-img{
 				display: block;
 				width: 120upx;
@@ -608,7 +724,7 @@
 			display: flex;
 			justify-content: flex-end;
 			align-items: baseline;
-			padding: 20upx 30upx;
+			padding: 5upx 30upx;
 			font-size: $font-sm + 2upx;
 			color: $font-color-light;
 			.num{
