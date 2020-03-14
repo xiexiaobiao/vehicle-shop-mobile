@@ -27,7 +27,7 @@
 	export default {
 		data() {
 			return {
-				source: 0,
+				pageType: '', //
 				customerList: [
 					{
 						idClient:'',
@@ -48,6 +48,7 @@
 			}
 		},
 		onLoad(option){
+			// console.log('option >>>'+ JSON.parse(option.pageType))
 			// 使用封装的 request
 			Request().request({
 				url:'client/vehicle/client/list',
@@ -73,10 +74,10 @@
 			    this.err = err;
 			 });
 			 
-			if(option.value){
-			console.log(option.value);
-			const value = JSON.parse(decodeURIComponent(option.value));
-			this.source = value;
+			if(option.pageType){
+			// console.log(option.value);
+			const value = JSON.parse(decodeURIComponent(option.pageType));
+			this.pageType = value;
 			}else{
 				
 			}			
@@ -84,8 +85,13 @@
 		methods: {
 			//选择客户
 			checkcustomer(item){
-				if(this.source == 1){
+				if(this.pageType == 'new' || this.pageType  == 'draft' ){
+					// 保存vuex信息
+					this.$store.commit('saveCustomerInfo',item);
 					//this.$api.prePage()获取上一页实例，在App.vue定义
+					this.$api.prePage().customerData = item;
+					uni.navigateBack()
+				}else if(this.pageType == 'edit' ){
 					this.$api.prePage().customerData = item;
 					uni.navigateBack()
 				}

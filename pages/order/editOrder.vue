@@ -1,7 +1,18 @@
 <template>
 	<view class="container">
+		
+		<!-- 空白页 -->
+		<view v-if="empty && pageType !== 'new' && pageType !== 'edit'" class="empty">
+			<image src="/static/emptyCart.jpg" mode="aspectFit"></image>
+			<view class="empty-tips">
+				您没有未完成订单！
+				<view class="navigator" @click="navToOrder"> 去订单列表 ></view>
+			</view>
+		</view>
+		<view v-else>
+		
 		<!-- 地址 -->
-		<navigator :url="'/pages/customer/customer?value='+ encodeURIComponent(JSON.stringify(1))" class="address-section">
+		<navigator :url="'/pages/customer/customer?pageType='+ encodeURIComponent(JSON.stringify(pageType))" class="address-section">
 			<view class="order-content">
 				<text class="yticon icon-shouhuodizhi"></text>
 				<view class="cen">
@@ -21,7 +32,7 @@
 			<view class="g-header b-b">
 				<image class="logo" src="https://biao-aliyun-oss-pic-bucket.oss-cn-shenzhen.aliyuncs.com/images/logo-samll.png"></image>
 				<text class="name">鼎泰汽车服务中心</text>
-				<navigator url='/pages/product/list' open-type="navigate"> 
+				<navigator :url="'/pages/product/list?pageType='+ encodeURIComponent(JSON.stringify(pageType))" open-type="navigate"> 
 					<button type="primary" style="font-size: small; width: 200upx;height: 50upx; position: relative; left: 200upx;">添加商品</button> 
 				</navigator>
 				<!-- <text style="color: #0000ff; position: relative; margin-left: 250upx;" class="name"  @click="addItems">添加商品</text> -->
@@ -104,7 +115,7 @@
 				</view>
 			</view>
 		</view>
-
+		</view>
 	</view>
 </template>
 
@@ -117,6 +128,9 @@
 		components: {uniNumberBox},
 		data() {
 			return {
+				empty: false, //空白页现实  true|false
+				customerEmpty: false, //空白页现实  true|false
+				itemEmpty: false, //空白页现实  true|false
 				pageType: 'new', //
 				isChecked: false  ,  
 				res:{status:422},
@@ -180,10 +194,12 @@
 			// 只要进入该页面就进行刷新，因为onLoad()只加载一次，
 			// https://blog.csdn.net/qq_27047215/article/details/98943080
 			// this.loadData();
-			console.log('dtoList2 '+ this.dtoList.length);
-			// 每次只累加一次
+			
+			/* console.log('dtoList2 '+ this.dtoList.length);
+			// 防止重新选客户后错误累加
 			this.orderData.detail = this.orderData.detail.concat(this.dtoList);
-			this.dtoList = [];
+			this.dtoList = []; */
+			
 			/* this.dtoList.forEach(
 				item=>{
 					let index = this.orderData.detail.findIndex( product=> product.itemUuid === item.itemUuid )
@@ -196,7 +212,6 @@
 			
 		},
 		onLoad(option){
-			console.log('dtoList1 '+ this.dtoList.length);
 			let title = '创建新订单';
 			if(option.type==='edit'){
 				this.pageType = 'edit'
@@ -216,12 +231,20 @@
 					this.orderData.package = orderData.package;
 				// 
 				// this.loadData();
-				this.getClientInfo();
-				this.calcTotal();  //计算总价				
+				this.getClientInfo();								
+			}else if(option.type==='draft'.toString()){ // 
+			    this.pageType = 'draft';
+				// 获取vuex缓存
+				this.customerData = this.cusInfo;
+				this.itemShowList = this.cartItems; // 用于watch，因为orderData.detail属于引用类，无法watch
+				this.orderData.detail = this.cartItems;
+				this.empty = this.customerEmpty && this.itemEmpty;
 			}
 			uni.setNavigationBarTitle({
 				title
-			})			
+			})
+			//计算总价
+			this.calcTotal();  
 		},
 		onReady() {
 			uni.hideToast();
@@ -229,19 +252,59 @@
 		watch:{
 			
 			//【引用类型】必须改变obj的指向【地址】才能监听成功【仅改变内部属性值是不会监听】,比如以下
+			// age或sex值发生变化，监听无效
 			// obj:{
 			// 	age: 20,
 			// 	sex: 'man'
 			// }
+			
+			//显示空白页
+			itemShowList(e){
+				let empty = (e.length === 0 ? true: false) ;
+				if(this.itemEmpty !== empty){
+					this.itemEmpty = empty;
+				}				
+				console.log('itemEmpty '+this.itemEmpty)
+				let empty1 = (this.customerEmpty && this.itemEmpty) ;
+				if(this.empty !== empty1){
+					this.empty = empty1;
+				}
+				console.log('empty '+this.empty)
+			},
+			customerData(e){
+				let empty = (e.clientUuid.length < 2 ? true: false) ;
+				if(this.customerEmpty !== empty){
+					this.customerEmpty = empty;
+				}
+				console.log('customerEmpty '+this.customerEmpty)
+				let empty2 = (this.customerEmpty && this.itemEmpty) ;
+				if(this.empty !== empty2){
+					this.empty = empty2;
+				}
+				console.log('empty '+this.empty)
+			},
+/* 			empty(e){
+				let empty = (this.customerEmpty && this.itemEmpty) ;
+				if(this.empty !== empty){
+					this.empty = empty;
+				}
+				console.log('empty '+this.empty)
+			}, */
 		},
 		computed:{
 			// ...mapState(['hasLogin']),
-			// ...mapGetters(['cartItems'])
+			...mapGetters(['cartItems']),
+			...mapGetters(['cusInfo'])
 		},
 		methods: {
+			navToOrder(){
+				uni.navigateTo({
+					url: '/pages/order/order-list'
+				})
+			},
 			// 查询客户信息
 			getClientInfo: function(){			
-				Request().request({
+				return Request().request({
 					url:'client/vehicle/client/uid',
 					method: 'get',
 					header:{},
@@ -397,7 +460,7 @@
 					return; 
 				}
 				//创建
-				if(this.pageType === 'new'){
+				if(this.pageType === 'new' || this.pageType === 'draft'){
 					this.orderData.clientUuid = this.customerData.clientUuid;
 					uni.showModal({
 						content:"确定提交订单？",
@@ -409,6 +472,7 @@
 								// this.$store.commit("emptyCart")
 								// 异步清空购物车缓存
 								this.$store.dispatch("emptyCartAsync");
+								this.$store.commit("delCustomerInfo");
 								/// 保存至db
 								Request().post('business/vehicle/business/create', {
 										header: {
@@ -444,9 +508,10 @@
 							// this.emptyCart();
 							// this.$store.commit("emptyCart")
 							// 异步清空购物车缓存
-							this.$store.dispatch("emptyCartAsync");
+							// this.$store.dispatch("emptyCartAsync");
+							// this.$store.commit("delCustomerInfo");
 							/// 保存至db
-							console.log(JSON.stringify(this.orderData));
+							// console.log(JSON.stringify(this.orderData));
 							Request().post('business/vehicle/business/update', {
 									header: {
 										contentType: 'application/json'
@@ -480,6 +545,35 @@
 	page {
 		background: $page-color-base;
 		padding-bottom: 100upx;
+	}
+	
+	/* 空白页 */
+	.empty{
+		position:fixed;
+		left: 0;
+		top:0;
+		width: 100%;
+		height: 100vh;
+		padding-bottom:100upx;
+		display:flex;
+		justify-content: center;
+		flex-direction: column;
+		align-items:center;
+		background: #fff;
+		image{
+			width: 240upx;
+			height: 160upx;
+			margin-bottom:30upx;
+		}
+		.empty-tips{
+			display:flex;
+			font-size: $font-sm+2upx;
+			color: $font-color-disabled;
+			.navigator{
+				color: $uni-color-primary;
+				margin-left: 16upx;
+			}
+		}
 	}
 
 	.item-right{

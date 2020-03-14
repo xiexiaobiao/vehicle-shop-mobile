@@ -8,8 +8,22 @@ const store = new Vuex.Store({
 		hasLogin: false,
 		userInfo: {},
 		// session周期有效
-		customerInfo:{},
-		items: [{
+		customerInfo:{
+			idClient:'',
+			clientUuid: '',
+			clientName: '刘大大',
+			age: '',
+			gender: '',
+			vehiclePlate: '粤A99999',
+			vehicleSeries: '宝马5系',
+			phone: '18666666666',
+			addr: '北京市东城区',
+			generateDate: '',
+			modifyDate: '',
+			point:''
+		},
+		items: [
+/* 			{
 					idItem: 3,
 					itemUuid: 'SP100034',
 					category: '保养',
@@ -29,10 +43,10 @@ const store = new Vuex.Store({
 					stock: 50,
 					checked: true, // 是否选中
 					picAddr:'http://biao-aliyun-oss-pic-bucket.oss-cn-shenzhen.aliyuncs.com/images/2020/03/08/1583628752948gv86t511pi.jpg',
-			},
+			}, */
 			], 
 	},
-	// 同步操作
+	// 同步操作 总是接受 state 作为第一个参数
 	mutations: {
 		login(state, provider) {
 			state.hasLogin = true;
@@ -66,7 +80,7 @@ const store = new Vuex.Store({
 		emptyCart(state){
 			state.items = [];
 		},
-		// 删除一个商品, 形参如果有多个，可使用{}
+		// 删除一个商品,  形参如果有多个，可使用{}
 		deleteCartItem(state,idItem){
 			// 注意es6语法 findIndex 和 find 使用
 			let index = state.items.findIndex(item => item.idItem === idItem)
@@ -85,14 +99,14 @@ const store = new Vuex.Store({
 			const cartItem = state.items.find(item => item.idItem === idItem)
 			cartItem.quantity = quantity;
 		},
-		addCustomerInfo(state,provider){
+		saveCustomerInfo(state,provider){
 			state.customerInfo = provider;
 		},
-		delCustomerInfo(){
+		delCustomerInfo(state){
 			state.customerInfo = {};
 		}
 	},
-	// 异步
+	// 异步 总是接受 context 作为第一个参数
 	actions: {
 		// {commit} 解构 context对象，context与store实例具有相同的属性和方法。这里commit 就是 store.commit
 		emptyCartAsync({commit}){

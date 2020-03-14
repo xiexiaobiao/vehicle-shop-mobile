@@ -34,12 +34,12 @@
 					{
 						title: '新建订单',
 						img: 'https://image.weilanwl.com/color2.0/plugin/wdh2236.jpg',
-						url: '../order/editOrder'
+						url: '../order/editOrder?type=new'
 					},
 					{
 						title: '未完成订单',
 						img: 'https://image.weilanwl.com/color2.0/plugin/qpct2148.jpg',
-						url: '../order/orderDraft'
+						url: "../order/editOrder?type=draft"
 					},
 /* 					{
 						title: '预留位置',

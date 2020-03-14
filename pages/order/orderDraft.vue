@@ -1,6 +1,17 @@
 <template>
 	<view class="container">
-		<!-- 地址 -->
+		
+		<!-- 空白页 -->
+		<view v-if="empty" class="empty">
+			<image src="/static/emptyCart.jpg" mode="aspectFit"></image>
+			<view class="empty-tips">
+				您没有未完成订单！
+				<view class="navigator" @click="navToOrder"> 去订单列表 ></view>
+			</view>
+		</view>
+		
+		<view v-else>
+			<!-- 地址 -->
 		<navigator :url="'/pages/customer/customer?value='+ encodeURIComponent(JSON.stringify(1))" class="address-section">
 			<view class="order-content">
 				<text class="yticon icon-shouhuodizhi"></text>
@@ -101,6 +112,9 @@
 				</view>
 			</view>
 		</view>
+		</view>
+		
+		
 
 	</view>
 </template>
@@ -114,6 +128,7 @@
 		components: {uniNumberBox},
 		data() {
 			return {
+				empty: false, //空白页现实  true|false
 				isChecked: false  ,  
 				res:{status:422},
 				maskState: 0, //优惠券面板显示状态
@@ -186,7 +201,7 @@
 				title:'拼命加载中...',
 				icon:'loading'
 			})			
-			// 传参,这里必须使用JSON.parse，否则取值失败！！！！！！！
+/* 			// 传参,这里必须使用JSON.parse，否则取值失败！！！！！！！
 			let orderData = JSON.parse(option.data);
 				this.orderData.orderUuid = orderData.orderUuid;
 				this.orderData.clientUuid = orderData.clientUuid;
@@ -197,7 +212,9 @@
 				this.orderData.package = orderData.package;
 			// 
 			// this.loadData();
-			this.getClientInfo();
+			this.getClientInfo(); */
+			this.customerData = this.cusInfo;
+			this.orderData.detail = this.cartItems;
 			this.calcTotal();  //计算总价
 		},
 		onReady() {
@@ -210,12 +227,32 @@
 			// 	age: 20,
 			// 	sex: 'man'
 			// }
+			
+			//显示空白页
+			orderData(e){
+				let empty = (e.detail.length === 0 ? true: false) ;
+				if(this.empty !== empty){
+					this.empty = empty;
+				}
+			},
+			customerData(e){
+				let empty = (e.clientUuid.length === 0 ? true: false) ;
+				if(this.empty !== empty){
+					this.empty = empty;
+				}
+			}
 		},
 		computed:{
 			// ...mapState(['hasLogin']),
-			// ...mapGetters(['cartItems'])
+			...mapGetters(['cartItems']),
+			...mapGetters(['cusInfo'])
 		},
 		methods: {
+			navToOrder(){
+				uni.navigateTo({
+					url: '/pages/order/order-list'
+				})
+			},
 			// 查询客户信息
 			getClientInfo: function(){			
 				Request().request({
@@ -384,6 +421,7 @@
 							// this.$store.commit("emptyCart")
 							// 异步清空购物车缓存
 							this.$store.dispatch("emptyCartAsync");
+							this.$store.commit("delCustomerInfo");
 							/// 保存至db
 							console.log(JSON.stringify(this.orderData));
 							Request().post('business/vehicle/business/update', {
@@ -419,6 +457,35 @@
 	page {
 		background: $page-color-base;
 		padding-bottom: 100upx;
+	}
+	
+	/* 空白页 */
+	.empty{
+		position:fixed;
+		left: 0;
+		top:0;
+		width: 100%;
+		height: 100vh;
+		padding-bottom:100upx;
+		display:flex;
+		justify-content: center;
+		flex-direction: column;
+		align-items:center;
+		background: #fff;
+		image{
+			width: 240upx;
+			height: 160upx;
+			margin-bottom:30upx;
+		}
+		.empty-tips{
+			display:flex;
+			font-size: $font-sm+2upx;
+			color: $font-color-disabled;
+			.navigator{
+				color: $uni-color-primary;
+				margin-left: 16upx;
+			}
+		}
 	}
 
 	.item-right{

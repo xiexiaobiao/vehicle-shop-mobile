@@ -89,6 +89,7 @@
 		},
 		data() {
 			return {
+				pageType: '',
 				itemName: '',//模糊查询
 				//已选择的商品数量
 				totalChecked: 0,
@@ -112,7 +113,13 @@
 			};
 		},
 		
-		onLoad(options){
+		onLoad(option){
+			// console.log('option >>>'+ JSON.stringify(option.pageType))
+			if(option.pageType){
+				const value = JSON.parse(decodeURIComponent(option.pageType));
+				this.pageType = value;
+			}
+			
 			uni.showLoading({
 				title: '数据拼命加载中...',
 				mask: true
@@ -120,8 +127,8 @@
 			// #ifdef H5
 			this.headerTop = document.getElementsByTagName('uni-page-head')[0].offsetHeight+'px';
 			// #endif
-			this.cateId = options.tid;
-			this.loadCateList(options.fid,options.sid);
+			this.cateId = option.tid;
+			this.loadCateList(option.fid,option.sid);
 			
 			// 页面懒加载：先默认加载一个页面量数据
 			this.requesForData();
@@ -154,30 +161,31 @@
 			this.loadData();
 		},
 		onNavigationBarButtonTap(e) {
-			if(e.index === 1){
-				uni.showToast({
-					title: '您已选'+ e.badgeText.toString() +'件商品',
-					icon: "none",
-					duration: 800
+			if(e.index === 0){
+				uni.navigateTo({
+					url: "../product/newProduct" //跳转到新增
 				})
-				
 				// 取消红点或者角标
 /* 				this.setStyle(e.index,false,"0");
 				uni.navigateTo({
 					url: "../order/cart" //跳转到未完成订单
 				}) */
-			}else if(e.index === 0){
-				uni.navigateTo({
-					url: "../product/newProduct" //跳转到新增
+			}else if(e.index === 1){
+				uni.showToast({
+					title: '您已选'+ e.badgeText +'件商品',
+					icon: "none",
+					duration: 800
 				})
 			}else if(e.index === 2){
 				// 
-				this.$api.prePage().dtoList = this.toAddItemList ;
-				console.log('pre '+this.$api.prePage().orderData.detail.length)
-				console.log('toadd '+this.toAddItemList.length);
-				uni.navigateBack({
-					url: "../order/editOrder" //跳转到订单
-				})
+				this.$api.prePage().orderData.detail = this.$api.prePage().orderData.detail.concat(this.toAddItemList);
+				
+				// 以下方法真机运行无法使用onactived方式在editeOrder页面赋值，
+				// this.$api.prePage().dtoList = this.toAddItemList ;
+
+				uni.navigateBack() //这里不需要指定具体url，系统自动查找
+			}else{
+				
 			}
 			
 		},
@@ -250,9 +258,14 @@
 						discountPrice: requestItem.sellPrice,
 					})
 					requestItem.quantity = 1;
-					//加入vuex缓存,commit是同步方法
-					// this.$store.commit('addCartItems',requestItem);
-					this.toAddItemList.push(requestItem);
+					
+					// 新建和未完成的加入缓存
+					if(this.pageType === 'new' || this.pageType === 'draft'){
+						//加入vuex缓存,commit是同步方法
+						this.$store.commit('addCartItems',requestItem);
+						this.toAddItemList.push(requestItem);
+					}
+					
 					//修改角标值
 					this.totalChecked += 1;
 					this.setStyle(1,true,this.totalChecked);
@@ -268,6 +281,8 @@
 					this.toAddItemList.splice(index,1);
 					this.totalChecked -= 1;
 					this.setStyle(1,true,this.totalChecked);
+					//vuex缓存处理,commit是同步方法
+					this.$store.commit('deleteCartItem',requestItem.idItem);
 					uni.showToast({
 						    title: "取消商品成功！",
 							icon: 'info',

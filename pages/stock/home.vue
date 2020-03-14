@@ -28,17 +28,17 @@
 				CustomBar: this.CustomBar,
 				list: [{
 						title: '库存查询',
-						img: 'https://image.weilanwl.com/color2.0/plugin/sylb2244.jpg',
-						url: '../product/pdtCategory'
-					},
-					{
-						title: '商品列表',
 						img: 'https://image.weilanwl.com/color2.0/plugin/wdh2236.jpg',
 						url: '../product/pdtCategory'
 					},
 					{
-						title: '新增商品',
+						title: '商品列表',
 						img: 'https://image.weilanwl.com/color2.0/plugin/qpct2148.jpg',
+						url: '../product/pdtCategory'
+					},
+					{
+						title: '新增商品',
+						img: 'https://image.weilanwl.com/color2.0/plugin/sylb2244.jpg',
 						url: '../product/newProduct'
 					},
 /* 					{

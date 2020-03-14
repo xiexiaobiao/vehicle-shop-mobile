@@ -18,12 +18,15 @@
 		</view>
 		<view class="row b-b">
 			<text class="tit">性别</text>
-			<radio-group name="gender" v-model="customerData.gender" @change="radioChange">
+			
+			<!-- 注意这个 radio-group用法，不要在radio-group做事件，直接在radio中绑定值即可，然后放到一个 radio-group-->
+			<!-- <radio-group name="gender" v-model="customerData.gender" @change="radioChange"> -->
+			<radio-group name="gender" >
 				<label>
-					<radio value="1" /><text>男</text>
+					<radio value= "true" :checked="customerData.gender"/><text>男</text>
 				</label>
 				<label>
-					<radio value="0" /><text>女</text>
+					<radio value= "false" :checked= "genderTemp"/><text>女</text>
 				</label>
 			</radio-group>
 			<!-- <switch :checked="customerData.gender" color="#fa436a" @change="switchChange" /> -->
@@ -56,11 +59,13 @@
 	
 	export default {
 		data() {
-			return {				
+			return {
+				genderTemp: Boolean,
+				manageType: 'add',
 				customerData: {
 					clientUuid: '',
 					clientName: '',
-					gender: '',
+					gender: Boolean,
 					age: '',
 					phone: '',
 					vehicleSeries: '',
@@ -76,6 +81,7 @@
 			if(option.type==='edit'){
 				title = '编辑客户信息'				
 				this.customerData = JSON.parse(option.data)
+				this.genderTemp = !this.customerData.gender;
 			}
 			this.manageType = option.type;
 			uni.setNavigationBarTitle({
@@ -92,10 +98,8 @@
 				).then(
 					res => {
 						// json 和 str 转换 JSON.stringify  JSON.parse
-						console.log('res--->>>'+ JSON.stringify(res))
 						let maxItemUuid = res.data;
-						let num = 10000 + Number(maxItemUuid.substr(3))+ 1;
-						
+						let num = 10000 + Number(maxItemUuid.substr(3))+ 1;						
 						this.customerData.clientUuid = maxItemUuid.substr(0,2) +num;
 					}
 				).catch(err => {
@@ -106,13 +110,12 @@
 		},
 		methods: {
 			radioChange(e){
-				let value = e.target.value
 				this.$set(this.customerData, 'gender', value) 
 			},			
-			switchChange(e){
+/* 			switchChange(e){
 				let value = e.target.value
 				this.$set(this.customerData, 'gender', value) 
-			},
+			}, */
 			deSwitchChange(e){
 				let value = e.target.value
 				this.$set(this.customerData, 'default', value) 
@@ -142,8 +145,11 @@
 					this.$api.msg('请填写车牌号信息');
 					return;
 				}
+				// 数据转换
+				this.customerData.gender = Boolean(this.customerData.gender); 
 				/// 保存至DB
-				Request().post('client/vehicle/client/create', {
+				if(this.manageType === 'add'){
+					Request().post('client/vehicle/client/create', {
 						header: {
 							contentType: 'application/json'
 						},
@@ -158,6 +164,24 @@
 							 }, 800)
 						}
 					);
+				}else{
+					Request().post('client/vehicle/client/update', {
+						header: {
+							contentType: 'application/json'
+						},
+						data: this.customerData,				
+					}).then(
+						res => {
+							//this.$api.prePage()获取上一页实例，可直接调用上页所有数据和方法，在App.vue定义
+							this.$api.prePage().refreshList(data, this.manageType);
+							this.$api.msg(`客户${this.manageType=='edit' ? '修改': '添加'}成功`);
+							setTimeout(()=>{
+								uni.navigateBack()
+							 }, 800)
+						}
+					);
+				}
+				
 /* 				uni.request({
 					url: 'http://10.10.10.203:9195/client/vehicle/client/create',
 					method: 'post',
