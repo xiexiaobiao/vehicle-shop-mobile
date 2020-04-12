@@ -100,7 +100,7 @@
 								"badgeText": "0"
 							},
 							{
-								"text": "返回",
+								"text": "确定",
 								"fontSize": "14"
 							}
 /* 							{
@@ -201,6 +201,18 @@
 			"path": "pages/order/orderDraft",
 			"style": {
 				"navigationBarTitleText": "未完成订单"
+			}
+		},
+		{
+			"path": "pages/product/brandShortcut",
+			"style": {
+				"navigationBarTitleText": "添加品牌"
+			}
+		},
+		{
+			"path": "pages/product/cateShortcut",
+			"style": {
+				"navigationBarTitleText": "添加类别"
 			}
 		}
 	],

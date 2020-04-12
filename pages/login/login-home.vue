@@ -99,9 +99,10 @@
 								uni.setStorageSync('token',result.token);
 								uni.hideLoading();
 								this.login(res.data); //使用vuex本地存储来共享数据
-								uni.reLaunch({
+								uni.navigateBack();//跳转到上一页
+								/* uni.reLaunch({
 										 url: "../report/home" //跳转到首页
-											});
+											}); */
 							} else {
 								uni.removeStorageSync('userinfo');
 								this.message = '用户名或密码错误';

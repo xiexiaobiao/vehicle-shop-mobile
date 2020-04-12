@@ -7,7 +7,7 @@
 		<view class="row b-b">
 			<text class="tit">类别</text>
 			<uni-combox label="" labelWidth="50px" :candidates="cateCandidates" placeholder="请选择类别" emptyTips="无匹配项" v-model="productData.category"></uni-combox>
-			<button type="primary" style="font-size: small; width: 150upx;">添加</button>
+			<button type="primary" style="font-size: small; width: 150upx;" @click="addCate">添加</button>
 <!-- 			<input class="input" type="text" v-model="productData.category" placeholder="(必填项)" placeholder-class="placeholder" />
  -->		</view>
 		<view class="row b-b">
@@ -18,7 +18,7 @@
 			<text class="tit">品牌</text>
 			<uni-combox label="" labelWidth="50px" :candidates="brandCandidates" placeholder="请选择品牌" emptyTips="无匹配项" v-model="productData.brandName"></uni-combox>
 <!-- 			<input class="input" type="text" v-model="productData.brandName" placeholder="" placeholder-class="placeholder" />
- -->		<button type="primary" style="font-size: small; width: 150upx;">添加</button>
+ -->		<button type="primary" style="font-size: small; width: 150upx;" @click="addBrand">添加</button>
 		</view>
 		<view class="row b-b">
 			<text class="tit">产地</text>
@@ -150,47 +150,11 @@
                 this.err = err;
              });
 			 
-			 // 使用封装的 request  类别列表
-			 Request().request({
-			 	url:'stock/vehicle/stock/category/list',
-			 	method: 'get',
-			 	header:{},
-			 	params: {
-					'pageNum': 1 ,
-					'pageSize': 999,
-				},
-			 	}				
-			 ).then(
-			 	res => {
-			 		// json 和 str 转换 JSON.stringify  JSON.parse
-			 		// console.log('res--->>>'+ JSON.stringify(res.data))
-			 		this.cateCandidates = res.data.records;
-			 	}
-			 ).catch(err => {
-			     console.error('is catch', err)
-			     this.err = err;
-			  });
+			// 使用封装的 request  类别列表
+			this.getCateList();
 			  
-			  // 使用封装的 request 品牌列表
-			  Request().request({
-			  	url:'stock/vehicle/stock/brand/list',
-			  	method: 'get',
-			  	header:{},
-			  	params: {
-					'pageNum': 1 ,
-					'pageSize': 999,
-				},
-			  	}				
-			  ).then(
-			  	res => {
-			  		// json 和 str 转换 JSON.stringify  JSON.parse
-			  		// console.log('res--->>>'+ JSON.stringify(res.data))
-			  		this.brandCandidates = res.data.records;
-			  	}
-			  ).catch(err => {
-			      console.error('is catch', err)
-			      this.err = err;
-			   });
+			// 使用封装的 request 品牌列表
+			this.getBrandList();
 			
 			
 /* 			uni.request({
@@ -204,6 +168,61 @@
 			}) */			
 		},
 		methods: {
+			addCate: function(){
+							uni.navigateTo({
+					url: `/pages/product/cateShortcut`
+					})
+			},
+			addBrand: function(){
+							uni.navigateTo({
+				url: `/pages/product/brandShortcut`
+				})
+			},
+			getCateList: function(){
+				// 使用封装的 request  类别列表
+				Request().request({
+					url:'stock/vehicle/stock/category/list',
+					method: 'get',
+					header:{},
+					params: {
+									'pageNum': 1 ,
+									'pageSize': 999,
+								},
+					}				
+				).then(
+					res => {
+						// json 和 str 转换 JSON.stringify  JSON.parse
+						// console.log('res--->>>'+ JSON.stringify(res.data))
+						this.cateCandidates = res.data.records;
+					}
+				).catch(err => {
+				    console.error('is catch', err)
+				    this.err = err;
+				 });
+			},
+			getBrandList: function(){
+				// 使用封装的 request 品牌列表
+				Request().request({
+					url:'stock/vehicle/stock/brand/list',
+					method: 'get',
+					header:{},
+					params: {
+									'pageNum': 1 ,
+									'pageSize': 999,
+								},
+					}				
+				).then(
+					res => {
+						// json 和 str 转换 JSON.stringify  JSON.parse
+						// console.log('res--->>>'+ JSON.stringify(res.data))
+						this.brandCandidates = res.data.records;
+					}
+				).catch(err => {
+				    console.error('is catch', err)
+				    this.err = err;
+				 });
+			},
+			
 			//选择图片
 			chooseImage: async function() {
 				   // 先获取policy

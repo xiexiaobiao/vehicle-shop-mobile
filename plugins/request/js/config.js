@@ -15,7 +15,7 @@ export const globalInterceptor = {
  */
 export const config = {
     baseURL: 'http://10.10.10.203:9195',
-	// baseURL: 'http://:9195',
+	//baseURL: 'http ',
     header: {
         // 'X-Auth-Token': 'xxxx',
         contentType: 'application/x-www-form-urlencoded'

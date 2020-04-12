@@ -9,7 +9,7 @@
 			</view>
 			<view v-else class="empty-tips">
 				空空如也
-				<view class="navigator" @click="navToLogin">去登陆></view>
+				<view class="navigator" @click="navToLogin">去登录></view>
 			</view>
 		</view>
 		<view v-else>
@@ -90,7 +90,7 @@
 				allChecked: false, //全选状态  true|false
 				empty: false, //空白页现实  true|false
 				cartList: [],
-				hasLogin: true,
+				// hasLogin: true,
 			};
 		},
 		activated() {
@@ -113,7 +113,7 @@
 			}
 		},
 		computed:{
-			// ...mapState(['hasLogin']),
+			...mapState(['hasLogin']),
 			...mapGetters(['cartItems'])
 		},
 		methods: {

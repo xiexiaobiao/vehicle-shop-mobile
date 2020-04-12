@@ -212,6 +212,7 @@
 			
 		},
 		onLoad(option){
+			
 			let title = '创建新订单';
 			if(option.type==='edit'){
 				this.pageType = 'edit'
@@ -239,6 +240,8 @@
 				this.itemShowList = this.cartItems; // 用于watch，因为orderData.detail属于引用类，无法watch
 				this.orderData.detail = this.cartItems;
 				this.empty = this.customerEmpty && this.itemEmpty;
+			}else{
+				
 			}
 			uni.setNavigationBarTitle({
 				title
