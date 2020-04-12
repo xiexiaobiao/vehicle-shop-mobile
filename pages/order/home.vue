@@ -1,5 +1,14 @@
 <template name="components">
-	<view>
+	<view class="container">
+		<view v-if="!hasLogin">
+			<view class="empty empty-tips">
+				您还没有登录！
+				<view class="navigator" >
+					<button class="add-btn" style="background-color: #55aaff; color: #ffffff;" @click="navToLogin">去登录</button>
+				</view>
+			</view>
+		</view>
+		<view v-else>
 		<scroll-view scroll-y class="page">
 <!-- 			<cu-custom bgImage="https://image.weilanwl.com/color2.0/plugin/cjkz2329.jpg">
 				<block slot="content">
@@ -16,10 +25,13 @@
 			</view>
 			<view class="cu-tabbar-height"></view>
 		</scroll-view>
+		</view>
 	</view>
 </template>
 
 <script>
+	import { mapGetters, mapState,mapActions,mapMutations } from 'vuex'
+		
 	export default {
 		name: "components",
 		data() {
@@ -49,17 +61,25 @@
 				]
 			};
 		},
+		computed:{
+			...mapState(['hasLogin'])
+		},
 		methods: {
 			toChild(e) {
 				uni.navigateTo({
 					url: e.currentTarget.dataset.url
 				})
 			},
+			navToLogin(){
+				uni.navigateTo({
+					url: '/pages/login/login-home'
+				})
+			},
 		},
 	}
 </script>
 
-<style>
+<style lang="scss">
 	.page {
 		height: 100vh;
 	}
@@ -99,5 +119,36 @@
 		left: 90upx;
 		transform: skew(10deg, 0deg);
 		opacity: 0.1;
+	}
+	.container{
+		padding-bottom: 134upx;
+		/* 空白页 */
+		.empty{
+			position:fixed;
+			left: 0;
+			top:0;
+			width: 100%;
+			height: 100vh;
+			padding-bottom:100upx;
+			display:flex;
+			justify-content: center;
+			flex-direction: column;
+			align-items:center;
+			background: #fff;
+			image{
+				width: 240upx;
+				height: 160upx;
+				margin-bottom:30upx;
+			}
+			.empty-tips{
+				display:flex;
+				font-size: $font-sm+2upx;
+				color: $font-color-disabled;
+				.navigator{
+					color: $uni-color-primary;
+					margin-left: 16upx;
+				}
+			}
+		}
 	}
 </style>
