@@ -10,8 +10,8 @@ a mirco-service framework admin system for vehicle shop
 
 ## 效果图:
 
-![Image text](https://github.com/xiexiaobiao/vehicle-shop-mobile/blob/master/static/3103.png)
-![Image text](https://github.com/xiexiaobiao/vehicle-shop-mobile/blob/master/static/3104.png)
-![Image text](https://github.com/xiexiaobiao/vehicle-shop-mobile/blob/master/static/3105.png)
+![Image text](https://biao-aliyun-oss-pic-bucket.oss-cn-shenzhen.aliyuncs.com/3103.png)
+![Image text](https://biao-aliyun-oss-pic-bucket.oss-cn-shenzhen.aliyuncs.com/3104.png)
+![Image text](https://biao-aliyun-oss-pic-bucket.oss-cn-shenzhen.aliyuncs.com/3105.png)
 
 ***
